@@ -63,12 +63,62 @@ Provide controlled execution:
 
 Keep external providers behind stable interfaces so GitHub, GitLab, CI systems, cloud platforms, and IDEs can be added independently.
 
-## Initial technology direction
+## Day 1 implementation foundation
 
-The exact stack is deliberately not frozen yet.
+### Runtime boundary
 
-Day 1 will establish the architecture and evaluate the implementation stack before the first production subsystem is built.
+The platform is **TypeScript-first**. Node.js hosts the CLI, core orchestration, integrations, and most developer-facing logic. Python is an optional specialist runtime for workloads where its analysis/AI ecosystem provides a material advantage.
 
-Candidate areas include TypeScript for developer-facing tooling and integrations, Python for analysis or AI workloads where it provides a clear advantage, PostgreSQL for durable project metadata, and GitHub Actions for CI.
+### Repository boundary
 
-The stack should follow the product's requirements rather than the other way around.
+The first implementation will use a monorepo with explicit package boundaries:
+
+```text
+apps/
+  cli/
+packages/
+  core/
+  indexer/
+  config/
+  integrations/
+docs/
+```
+
+This structure keeps the Project Brain domain model separate from repository indexing, configuration, and external adapters.
+
+### Local data model
+
+The first Project Brain implementation is local-first:
+
+- SQLite for durable metadata
+- filesystem-backed artifacts for source/index data
+- Git as the source of truth for repository history
+- provider APIs only for external signals
+
+PostgreSQL remains a future option when hosted/team requirements justify it.
+
+### Tooling
+
+- pnpm workspaces for package management
+- TypeScript for the primary language
+- commander for the initial CLI
+- GitHub Actions for CI
+
+### Supported environments
+
+The initial target is:
+
+- Linux x64
+- macOS x64/arm64
+- Windows x64
+
+Node.js 22 LTS is the baseline runtime.
+
+## Design constraints
+
+1. Core logic should remain provider-agnostic.
+2. Evidence must remain attached to important intelligence results.
+3. Destructive agent actions require approval by default.
+4. Local operation should not require cloud infrastructure.
+5. Interfaces should allow future IDE, CI/CD, cloud, and Git provider integrations.
+6. Technology choices should be revisited when real implementation evidence contradicts them.
