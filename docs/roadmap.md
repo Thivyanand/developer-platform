@@ -6,17 +6,23 @@
 - [x] Product vision documented
 - [x] Initial architecture documented
 - [ ] Final product name
-- [ ] Final technology stack
-- [ ] Development environment
-- [ ] CI baseline
+- [x] Final technology direction
+- [x] Development environment baseline defined
+- [x] CI baseline defined
 
 ## Week 1 — Project Brain
 
 ### Day 1
-- Product definition
-- Architecture
-- Repository foundation
-- Engineering conventions
+- [x] Product definition
+- [x] Architecture
+- [x] Repository foundation
+- [x] Engineering conventions
+- [x] Technology decisions
+- [x] Package boundaries
+- [x] Local storage/indexing direction
+- [x] Supported environments
+- [x] CI baseline
+- [ ] Final public product name
 
 ### Day 2
 - Runtime and package structure
