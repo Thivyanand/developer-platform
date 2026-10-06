@@ -18,11 +18,24 @@ The long-term goal is not another coding chatbot. It is a developer system that 
 - **Agent** — plan and execute approved development tasks with verification.
 - **Integrations** — GitHub first, followed by IDEs, CI/CD, and cloud platforms.
 
+## Day 1 foundation
+
+The initial implementation direction is now locked:
+
+- TypeScript/Node.js 22 LTS for the core developer runtime
+- pnpm workspaces for the monorepo
+- commander for the CLI
+- SQLite + filesystem-backed local project data
+- GitHub Actions for CI
+- Linux, macOS, and Windows as initial targets
+
+The public product name remains intentionally open until the final naming decision is made.
+
 ## Status
 
 🚧 Early development — Day 1 foundation.
 
-See docs/vision.md, docs/architecture.md, and docs/roadmap.md.
+See docs/vision.md, docs/architecture.md, docs/roadmap.md, and docs/DECISIONS.md.
 
 ## Development principle
 
