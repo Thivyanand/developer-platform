@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { basename } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Command } from "commander";
 import { createProject } from "@developer-platform/core";
@@ -16,10 +17,8 @@ export function createCli(): Command {
     .command("project")
     .description("Inspect the current project")
     .action(() => {
-      const project = createProject(
-        process.cwd(),
-        process.cwd().split("/").pop() ?? "project"
-      );
+      const rootPath = process.cwd();
+      const project = createProject(rootPath, basename(rootPath) || "project");
 
       console.log(`Project: ${project.name}`);
       console.log(`Root: ${project.rootPath}`);
