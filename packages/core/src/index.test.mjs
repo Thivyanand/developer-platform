@@ -8,3 +8,7 @@ test("creates a project identity", () => {
     { rootPath: "/workspace/demo", name: "demo" }
   );
 });
+
+test("preserves an explicit project name", () => {
+  assert.equal(createProject("/workspace/demo", "custom").name, "custom");
+});
