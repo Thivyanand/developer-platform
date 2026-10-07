@@ -18,24 +18,45 @@ The long-term goal is not another coding chatbot. It is a developer system that 
 - **Agent** — plan and execute approved development tasks with verification.
 - **Integrations** — GitHub first, followed by IDEs, CI/CD, and cloud platforms.
 
-## Day 1 foundation
+## Day 2 foundation
 
-The initial implementation direction is now locked:
+The runtime scaffold is now a pnpm monorepo:
 
-- TypeScript/Node.js 22 LTS for the core developer runtime
-- pnpm workspaces for the monorepo
-- commander for the CLI
-- SQLite + filesystem-backed local project data
-- GitHub Actions for CI
-- Linux, macOS, and Windows as initial targets
+    apps/
+      cli/                 # User-facing command line interface
 
-The public product name remains intentionally open until the final naming decision is made.
+    packages/
+      core/                # Project Brain domain primitives
+      config/              # Platform configuration
+      indexer/             # Repository indexing primitives
+      integrations/        # External provider contracts
+
+The initial runtime uses **TypeScript + Node.js 22 LTS**, with Commander powering the CLI. The repository has a GitHub Actions pipeline for typechecking, building, and testing the workspace.
+
+The public product name remains intentionally open while development continues.
 
 ## Status
 
-🚧 Early development — Day 1 foundation.
+🚧 Early development — Day 2 runtime foundation.
 
 See docs/vision.md, docs/architecture.md, docs/roadmap.md, and docs/DECISIONS.md.
+
+## Development
+
+Install dependencies:
+
+    pnpm install
+
+Run the checks:
+
+    pnpm typecheck
+    pnpm build
+    pnpm test
+
+Run the CLI after building:
+
+    pnpm --filter @developer-platform/cli exec developer-platform --help
+    pnpm --filter @developer-platform/cli exec developer-platform project
 
 ## Development principle
 
