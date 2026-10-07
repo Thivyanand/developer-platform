@@ -14,5 +14,8 @@
   "dependencies": {
     "@developer-platform/core": "workspace:*",
     "commander": "^14.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0"
   }
 }
