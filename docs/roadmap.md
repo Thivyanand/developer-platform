@@ -25,14 +25,19 @@
 - [ ] Final public product name
 
 ### Day 2
-- Runtime and package structure
-- CLI foundation
-- Configuration model
+- [x] Runtime and package structure
+- [x] CLI foundation
+- [x] Configuration model
+- [x] Foundation tests
+- [x] CI validation
 
 ### Day 3
-- Repository ingestion
-- File discovery
-- Language and framework detection
+- [x] Repository ingestion
+- [x] File discovery
+- [x] Language detection
+- [x] Framework detection
+- [x] CLI repository scan command
+- [x] Indexer test coverage
 
 ### Day 4
 - Git metadata ingestion

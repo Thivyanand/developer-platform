@@ -18,26 +18,23 @@ The long-term goal is not another coding chatbot. It is a developer system that 
 - **Agent** — plan and execute approved development tasks with verification.
 - **Integrations** — GitHub first, followed by IDEs, CI/CD, and cloud platforms.
 
-## Day 2 foundation
+## Day 3 — Repository ingestion
 
-The runtime scaffold is now a pnpm monorepo:
+The first Project Brain ingestion layer is now implemented.
 
-    apps/
-      cli/                 # User-facing command line interface
+The indexer can:
+- recursively discover repository files;
+- ignore Git metadata and generated/dependency directories;
+- normalize file extensions;
+- detect common programming and markup languages;
+- detect frameworks from Node.js dependencies and project markers;
+- expose the scan through the CLI with `project scan`.
 
-    packages/
-      core/                # Project Brain domain primitives
-      config/              # Platform configuration
-      indexer/             # Repository indexing primitives
-      integrations/        # External provider contracts
-
-The initial runtime uses **TypeScript + Node.js 22 LTS**, with Commander powering the CLI. The repository has a GitHub Actions pipeline for typechecking, building, and testing the workspace.
-
-The public product name remains intentionally open while development continues.
+The scan produces a deterministic `RepositorySnapshot` containing the repository root, discovered files, languages, and frameworks.
 
 ## Status
 
-🚧 Early development — Day 2 runtime foundation.
+🚧 Early development — Day 3 repository ingestion.
 
 See docs/vision.md, docs/architecture.md, docs/roadmap.md, and docs/DECISIONS.md.
 
@@ -57,6 +54,9 @@ Run the CLI after building:
 
     pnpm --filter @developer-platform/cli exec developer-platform --help
     pnpm --filter @developer-platform/cli exec developer-platform project
+    pnpm --filter @developer-platform/cli exec developer-platform project scan
+
+The public product name remains intentionally open while development continues.
 
 ## Development principle
 
