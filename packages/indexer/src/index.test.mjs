@@ -55,3 +55,11 @@ test("detects frameworks from package.json and project files", () => {
   assert.deepEqual(snapshot.frameworks, ["Next.js", "React"]);
   assert.deepEqual(snapshot.languages, ["TypeScript"]);
 });
+
+
+test("rejects a non-directory repository root", () => {
+  const file = join(tmpdir(), "developer-platform-file");
+  writeFileSync(file, "not a directory");
+
+  assert.throws(() => scanRepository(file), /Repository root is not a directory/);
+});
