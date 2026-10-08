@@ -97,7 +97,7 @@ function discoverFiles(rootPath: string, currentPath = rootPath): RepositoryFile
 function detectLanguages(files: RepositoryFile[]): string[] {
   return [...new Set(
     files
-      .map((file) => LANGUAGE_BY_EXTENSION[extname(`.${file.extension}`).toLowerCase()])
+      .map((file) => LANGUAGE_BY_EXTENSION[file.extension ? `.${file.extension}` : ""])
       .filter((language): language is string => Boolean(language))
   )].sort();
 }
