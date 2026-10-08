@@ -33,7 +33,7 @@ test("scans repository files and ignores generated directories", () => {
   const snapshot = scanRepository(root);
 
   assert.deepEqual(snapshot.files.map((file) => file.path), ["README.md", "src/main.ts"]);
-  assert.deepEqual(snapshot.languages, ["TypeScript"]);
+  assert.deepEqual(snapshot.languages, ["JSON", "TypeScript"]);
 });
 
 test("detects frameworks from package.json and project files", () => {
