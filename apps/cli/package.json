@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@developer-platform/core": "workspace:*",
+    "@developer-platform/indexer": "workspace:*",
     "commander": "^14.0.1"
   },
   "devDependencies": {

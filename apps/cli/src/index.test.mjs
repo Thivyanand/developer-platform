@@ -9,3 +9,13 @@ test("creates the CLI with project command", () => {
   assert.equal(cli.version(), "0.1.0");
   assert.equal(cli.commands.some((command) => command.name() === "project"), true);
 });
+
+test("exposes the project scan command", () => {
+  const cli = createCli();
+  const project = cli.commands.find((command) => command.name() === "project");
+
+  assert.equal(
+    project?.commands.some((command) => command.name() === "scan"),
+    true
+  );
+});
