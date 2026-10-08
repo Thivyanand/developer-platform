@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { basename, extname, join, relative } from "node:path";
 
@@ -6,11 +7,34 @@ export interface RepositoryFile {
   extension: string;
 }
 
+export interface GitCommit {
+  hash: string;
+  subject: string;
+  authorName: string;
+  authorEmail: string;
+  authoredAt: string;
+  parents: string[];
+}
+
+export interface GitBranch {
+  name: string;
+  commit: string;
+  current: boolean;
+}
+
+export interface GitMetadata {
+  head: string;
+  currentBranch: string | null;
+  commits: GitCommit[];
+  branches: GitBranch[];
+}
+
 export interface RepositorySnapshot {
   rootPath: string;
   files: RepositoryFile[];
   languages: string[];
   frameworks: string[];
+  git: GitMetadata | null;
 }
 
 const DEFAULT_IGNORED_DIRECTORIES = new Set([
@@ -64,14 +88,84 @@ const FRAMEWORK_BY_DEPENDENCY: Record<string, string> = {
   "nestjs": "NestJS"
 };
 
+function runGit(rootPath: string, args: string[]): string {
+  return execFileSync("git", args, {
+    cwd: rootPath,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"]
+  }).trim();
+}
+
+function readGitCommits(rootPath: string, limit: number): GitCommit[] {
+  const recordSeparator = "\x1e";
+  const fieldSeparator = "\x1f";
+  const format = ["%H", "%s", "%an", "%ae", "%aI", "%P"].join(fieldSeparator);
+
+  const output = runGit(rootPath, [
+    "log",
+    "-n",
+    String(limit),
+    "--pretty=format:" + recordSeparator + format
+  ]);
+
+  return output
+    .split(recordSeparator)
+    .map((record) => record.trim())
+    .filter(Boolean)
+    .map((record) => {
+      const [hash, subject, authorName, authorEmail, authoredAt, parents = ""] =
+        record.split(fieldSeparator);
+
+      return {
+        hash,
+        subject,
+        authorName,
+        authorEmail,
+        authoredAt,
+        parents: parents ? parents.split(" ") : []
+      };
+    });
+}
+
+function readGitBranches(rootPath: string): GitBranch[] {
+  const fieldSeparator = "\x1f";
+  const output = runGit(rootPath, [
+    "for-each-ref",
+    "--format=%(refname:short)" + fieldSeparator + "%(objectname)" + fieldSeparator + "%(HEAD)",
+    "refs/heads"
+  ]);
+
+  return output
+    ? output.split("\n").map((line) => {
+        const [name, commit, headMarker] = line.split(fieldSeparator);
+        return { name, commit, current: headMarker === "*" };
+      })
+    : [];
+}
+
+export function readGitMetadata(rootPath: string, commitLimit = 50): GitMetadata | null {
+  try {
+    if (runGit(rootPath, ["rev-parse", "--is-inside-work-tree"]) !== "true") {
+      return null;
+    }
+
+    return {
+      head: runGit(rootPath, ["rev-parse", "HEAD"]),
+      currentBranch: runGit(rootPath, ["branch", "--show-current"]) || null,
+      commits: readGitCommits(rootPath, commitLimit),
+      branches: readGitBranches(rootPath)
+    };
+  } catch {
+    return null;
+  }
+}
+
 function discoverFiles(rootPath: string, currentPath = rootPath): RepositoryFile[] {
   const entries = readdirSync(currentPath, { withFileTypes: true });
   const files: RepositoryFile[] = [];
 
   for (const entry of entries) {
-    if (entry.isDirectory() && DEFAULT_IGNORED_DIRECTORIES.has(entry.name)) {
-      continue;
-    }
+    if (entry.isDirectory() && DEFAULT_IGNORED_DIRECTORIES.has(entry.name)) continue;
 
     const absolutePath = join(currentPath, entry.name);
 
@@ -80,13 +174,10 @@ function discoverFiles(rootPath: string, currentPath = rootPath): RepositoryFile
       continue;
     }
 
-    if (!entry.isFile()) {
-      continue;
-    }
+    if (!entry.isFile()) continue;
 
-    const relativePath = relative(rootPath, absolutePath);
     files.push({
-      path: relativePath,
+      path: relative(rootPath, absolutePath),
       extension: extname(entry.name).slice(1).toLowerCase()
     });
   }
@@ -97,7 +188,7 @@ function discoverFiles(rootPath: string, currentPath = rootPath): RepositoryFile
 function detectLanguages(files: RepositoryFile[]): string[] {
   return [...new Set(
     files
-      .map((file) => LANGUAGE_BY_EXTENSION[file.extension ? `.${file.extension}` : ""])
+      .map((file) => LANGUAGE_BY_EXTENSION[file.extension ? "." + file.extension : ""])
       .filter((language): language is string => Boolean(language))
   )].sort();
 }
@@ -153,7 +244,7 @@ export function scanRepository(rootPath: string): RepositorySnapshot {
   const root = statSync(rootPath);
 
   if (!root.isDirectory()) {
-    throw new Error(`Repository root is not a directory: ${rootPath}`);
+    throw new Error("Repository root is not a directory: " + rootPath);
   }
 
   const files = discoverFiles(rootPath);
@@ -162,6 +253,7 @@ export function scanRepository(rootPath: string): RepositorySnapshot {
     rootPath,
     files,
     languages: detectLanguages(files),
-    frameworks: detectFrameworks(rootPath, files)
+    frameworks: detectFrameworks(rootPath, files),
+    git: readGitMetadata(rootPath)
   };
 }

@@ -40,8 +40,8 @@
 - [x] Indexer test coverage
 
 ### Day 4
-- Git metadata ingestion
-- Commit and branch model
+- [x] Git metadata ingestion
+- [x] Commit and branch model
 
 ### Day 5
 - Initial code indexing

@@ -10,6 +10,7 @@ The indexer returns:
 - files — sorted repository-relative file paths with normalized extensions.
 - languages — unique detected languages.
 - frameworks — unique detected frameworks and platform markers.
+- git — Git history metadata when the repository is inside a Git work tree.
 
 This contract intentionally contains metadata only. It does not parse source code yet; symbol and semantic indexing belongs to Day 5 and the Intelligence Engine.
 
@@ -42,6 +43,19 @@ Framework detection currently combines:
 - JVM build descriptors.
 
 Detection is deliberately conservative. Later Project Brain stages can enrich these signals with configuration parsing, AST analysis, dependency graphs, and Git history.
+
+## Git metadata
+
+Day 4 adds a bounded Git metadata layer to the repository snapshot:
+
+- HEAD commit hash;
+- current branch;
+- recent commits with hash, subject, author, authored timestamp, and parent hashes;
+- local branch names and their tip commits.
+
+The commit history is bounded to 50 commits by default so scanning a large repository does not accidentally load its entire history. Callers can request a different limit through readGitMetadata(rootPath, commitLimit).
+
+Non-Git directories remain valid scan targets; their git field is null.
 
 ## CLI
 
