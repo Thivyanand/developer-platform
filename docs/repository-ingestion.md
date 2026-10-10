@@ -64,3 +64,22 @@ The ingestion layer is exposed through:
     developer-platform project scan
 
 The command reports file count, detected languages, and detected frameworks without mutating the repository.
+
+
+## Day 5 — Initial code search
+
+The first code-search pass reads repository text files on demand and returns ranked line matches. It is intentionally lightweight and does not persist source contents.
+
+- Identifiers are split across camelCase/PascalCase boundaries and punctuation.
+- Exact token matches score above partial-token matches.
+- Results include repository-relative path, one-based line number, a short snippet, and score.
+- Binary files are skipped; files larger than 512 KiB are skipped by default.
+- Results are deterministic, with ties ordered by path and line.
+- The default result limit is 20 and can be configured by callers.
+
+Run search from the repository root:
+
+    developer-platform project search "git metadata"
+    developer-platform project search "readGitMetadata" --limit 5
+
+This is a first retrieval baseline, not yet a persistent index or semantic search engine. Symbol-aware parsing and dependency relationships remain future work.

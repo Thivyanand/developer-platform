@@ -44,8 +44,12 @@
 - [x] Commit and branch model
 
 ### Day 5
-- Initial code indexing
-- Search interface
+- [x] Initial code-search baseline
+- [x] Tokenize camelCase/PascalCase identifiers
+- [x] Ranked line-level results with snippets
+- [x] Skip binary and oversized files
+- [x] CLI search command
+- [x] Search tests and documentation
 
 ### Day 6
 - Project graph prototype

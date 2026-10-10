@@ -32,9 +32,15 @@ The indexer can:
 
 The scan produces a deterministic `RepositorySnapshot` containing the repository root, discovered files, languages, and frameworks.
 
+## Day 5 — Initial code search
+
+The first code-search baseline is implemented. Search tokenizes camelCase identifiers, ranks exact token matches above partial matches, and returns file paths, line numbers, and snippets. Binary files and files larger than 512 KiB are skipped by default.
+
+Run `project search "git metadata"` from a repository root. Use `--limit 5` to cap results.
+
 ## Status
 
-🚧 Early development — Day 3 repository ingestion.
+🚧 Early development — repository ingestion and initial code search.
 
 See docs/vision.md, docs/architecture.md, docs/roadmap.md, and docs/DECISIONS.md.
 
@@ -55,6 +61,7 @@ Run the CLI after building:
     pnpm --filter @developer-platform/cli exec developer-platform --help
     pnpm --filter @developer-platform/cli exec developer-platform project
     pnpm --filter @developer-platform/cli exec developer-platform project scan
+    pnpm --filter @developer-platform/cli exec developer-platform project search "git metadata"
 
 The public product name remains intentionally open while development continues.
 

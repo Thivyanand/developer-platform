@@ -19,3 +19,14 @@ test("exposes the project scan command", () => {
     true
   );
 });
+
+
+test("exposes the project search command", () => {
+  const cli = createCli();
+  const project = cli.commands.find((command) => command.name() === "project");
+
+  assert.equal(
+    project?.commands.some((command) => command.name() === "search"),
+    true
+  );
+});

@@ -257,3 +257,88 @@ export function scanRepository(rootPath: string): RepositorySnapshot {
     git: readGitMetadata(rootPath)
   };
 }
+
+
+export interface CodeSearchResult {
+  path: string;
+  line: number;
+  snippet: string;
+  score: number;
+}
+
+export interface CodeSearchOptions {
+  maxFileBytes?: number;
+  maxResults?: number;
+}
+
+/** Split camelCase, PascalCase, and punctuation into searchable lowercase terms. */
+export function tokenizeCode(value: string): string[] {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((token) => token.length > 0);
+}
+
+/**
+ * Search repository text files without persisting source contents.
+ * Binary files and files larger than maxFileBytes are skipped.
+ */
+export function searchRepository(
+  rootPath: string,
+  query: string,
+  options: CodeSearchOptions = {}
+): CodeSearchResult[] {
+  const terms = [...new Set(tokenizeCode(query))];
+  if (terms.length === 0) return [];
+
+  const maxFileBytes = options.maxFileBytes ?? 512 * 1024;
+  const maxResults = options.maxResults ?? 20;
+  if (!Number.isInteger(maxFileBytes) || maxFileBytes < 1) {
+    throw new Error("maxFileBytes must be a positive integer");
+  }
+  if (!Number.isInteger(maxResults) || maxResults < 1) {
+    throw new Error("maxResults must be a positive integer");
+  }
+
+  const results: CodeSearchResult[] = [];
+  for (const file of discoverFiles(rootPath)) {
+    const absolutePath = join(rootPath, file.path);
+    let source: string;
+    try {
+      if (statSync(absolutePath).size > maxFileBytes) continue;
+      const buffer = readFileSync(absolutePath);
+      if (buffer.includes(0)) continue;
+      source = buffer.toString("utf8");
+    } catch {
+      continue;
+    }
+
+    const lines = source.split(/\r?\n/);
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index];
+      const normalizedLine = tokenizeCode(line);
+      if (normalizedLine.length === 0) continue;
+
+      let score = 0;
+      for (const term of terms) {
+        const exactTokenMatches = normalizedLine.filter((token) => token === term).length;
+        if (exactTokenMatches > 0) score += 3 + Math.min(exactTokenMatches - 1, 2);
+        else if (normalizedLine.some((token) => token.includes(term))) score += 1;
+      }
+      if (score > 0) {
+        results.push({
+          path: file.path,
+          line: index + 1,
+          snippet: line.trim().slice(0, 240),
+          score
+        });
+      }
+    }
+  }
+
+  return results
+    .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path) || a.line - b.line)
+    .slice(0, maxResults);
+}

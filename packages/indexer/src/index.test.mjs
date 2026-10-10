@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { describeFile, readGitMetadata, scanRepository } from "../dist/index.js";
+import { describeFile, readGitMetadata, scanRepository, searchRepository, tokenizeCode } from "../dist/index.js";
 
 function git(root, ...args) {
   execFileSync("git", args, { cwd: root, stdio: "ignore" });
@@ -105,4 +105,38 @@ test("rejects a non-directory repository root", () => {
   const file = join(tmpdir(), "developer-platform-file");
   writeFileSync(file, "not a directory");
   assert.throws(() => scanRepository(file), /Repository root is not a directory/);
+});
+
+
+test("tokenizes camelCase identifiers and punctuation", () => {
+  assert.deepEqual(tokenizeCode("readGitMetadata"), ["read", "git", "metadata"]);
+});
+
+test("searches source files with ranked line-numbered results", () => {
+  const root = mkdtempSync(join(tmpdir(), "developer-platform-search-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "src", "metadata.ts"), "export function readGitMetadata() {}\nconst git = true;\n");
+  writeFileSync(join(root, "README.md"), "Metadata helps explain the repository.\n");
+  writeFileSync(join(root, "image.bin"), Buffer.from([0, 1, 2, 3]));
+
+  const results = searchRepository(root, "git metadata");
+  assert.ok(results.length >= 2);
+  assert.equal(results[0].path, "src/metadata.ts");
+  assert.equal(results[0].line, 1);
+  assert.match(results[0].snippet, /readGitMetadata/);
+  assert.equal(results.every((result) => result.path !== "image.bin"), true);
+});
+
+test("returns no results for empty queries and honors result limits", () => {
+  const root = mkdtempSync(join(tmpdir(), "developer-platform-search-"));
+  writeFileSync(join(root, "a.ts"), "const search = 1;\nconst searchAgain = 2;");
+  assert.deepEqual(searchRepository(root, "!!!"), []);
+  assert.equal(searchRepository(root, "search", { maxResults: 1 }).length, 1);
+});
+
+test("skips oversized files and validates search options", () => {
+  const root = mkdtempSync(join(tmpdir(), "developer-platform-search-"));
+  writeFileSync(join(root, "large.ts"), "search ".repeat(100));
+  assert.deepEqual(searchRepository(root, "search", { maxFileBytes: 10 }), []);
+  assert.throws(() => searchRepository(root, "search", { maxResults: 0 }), /maxResults/);
 });
