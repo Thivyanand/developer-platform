@@ -63,6 +63,10 @@ Provide controlled execution:
 
 Keep external providers behind stable interfaces so GitHub, GitLab, CI systems, cloud platforms, and IDEs can be added independently.
 
+## Day 6 graph prototype
+
+The first graph is built in memory from a repository snapshot. It links the project to discovered files, detected frameworks, Git commits, and local branches; files link to their detected language. Branches link to their tip commits. The graph is deterministic and read-only. Symbol-level and import-level edges are future work.
+
 ## Day 1 implementation foundation
 
 ### Runtime boundary

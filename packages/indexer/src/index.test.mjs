@@ -140,3 +140,42 @@ test("skips oversized files and validates search options", () => {
   assert.deepEqual(searchRepository(root, "search", { maxFileBytes: 10 }), []);
   assert.throws(() => searchRepository(root, "search", { maxResults: 0 }), /maxResults/);
 });
+
+
+test("builds a deterministic project graph from repository metadata", async () => {
+  const { buildProjectGraph } = await import("../dist/index.js");
+  const root = mkdtempSync(join(tmpdir(), "developer-platform-graph-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "src", "main.ts"), "export const answer = 42;");
+  writeFileSync(join(root, "README.md"), "# graph");
+  writeFileSync(join(root, "package.json"), JSON.stringify({ dependencies: { react: "^19.0.0" } }));
+
+  const snapshot = scanRepository(root);
+  const graph = buildProjectGraph(snapshot);
+  const secondGraph = buildProjectGraph(snapshot);
+
+  assert.deepEqual(graph, secondGraph);
+  assert.ok(graph.nodes.some((node) => node.id === "project:root" && node.type === "project"));
+  assert.ok(graph.nodes.some((node) => node.id === "file:src/main.ts"));
+  assert.ok(graph.nodes.some((node) => node.id === "language:TypeScript"));
+  assert.ok(graph.nodes.some((node) => node.id === "framework:React"));
+  assert.ok(graph.edges.some((edge) => edge.source === "project:root" && edge.target === "file:src/main.ts" && edge.type === "contains"));
+  assert.ok(graph.edges.every((edge) =>
+    graph.nodes.some((node) => node.id === edge.source) &&
+    graph.nodes.some((node) => node.id === edge.target)
+  ));
+});
+
+test("includes git commits and branch tip relationships in the project graph", async () => {
+  const { buildProjectGraph } = await import("../dist/index.js");
+  const root = initGitRepository();
+  writeFileSync(join(root, "index.ts"), "export {};");
+  git(root, "add", "index.ts");
+  git(root, "commit", "-q", "-m", "graph fixture");
+  git(root, "branch", "feature/graph");
+
+  const graph = buildProjectGraph(scanRepository(root));
+  assert.ok(graph.nodes.some((node) => node.type === "commit" && node.label === "graph fixture"));
+  assert.ok(graph.nodes.some((node) => node.type === "branch" && node.label === "master (current)"));
+  assert.ok(graph.edges.some((edge) => edge.type === "points-to" && edge.source === "branch:feature/graph"));
+});

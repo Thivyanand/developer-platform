@@ -83,3 +83,16 @@ Run search from the repository root:
     developer-platform project search "readGitMetadata" --limit 5
 
 This is a first retrieval baseline, not yet a persistent index or semantic search engine. Symbol-aware parsing and dependency relationships remain future work.
+
+
+## Day 6 — Project graph prototype
+
+The graph prototype transforms a repository snapshot into a deterministic in-memory graph. Nodes represent the project, files, detected languages, frameworks, Git commits, and local branches. Edges represent containment, language usage, framework usage, project commit history, and branch tip references.
+
+Graph construction is read-only and does not persist source code or mutate the repository. Every edge points to a node included in the graph. Nodes and edges are sorted for stable output and testability.
+
+Run the graph summary from a repository root:
+
+    developer-platform project graph
+
+The CLI reports total nodes, total edges, and node counts by type. This is a metadata graph prototype; symbol-level imports, function calls, and dependency edges will be added in later intelligence-engine work.

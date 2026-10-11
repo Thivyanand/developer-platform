@@ -4,7 +4,7 @@ import { basename } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Command } from "commander";
 import { createProject } from "@developer-platform/core";
-import { scanRepository, searchRepository } from "@developer-platform/indexer";
+import { buildProjectGraph, scanRepository, searchRepository } from "@developer-platform/indexer";
 
 export function createCli(): Command {
   const program = new Command();
@@ -31,7 +31,7 @@ export function createCli(): Command {
 
       console.log(`Files: ${snapshot.files.length}`);
       console.log(`Languages: ${snapshot.languages.join(", ") || "none detected"}`);
-      console.log(`Frameworks: ${snapshot.frameworks.join(", ") || "none detected"}");
+      console.log(`Frameworks: ${snapshot.frameworks.join(", ") || "none detected"}`);
     })
     .command("search <query>")
     .description("Search repository source files")
@@ -54,6 +54,19 @@ export function createCli(): Command {
         console.log(`${result.path}:${result.line}  ${result.snippet}`);
       }
       console.log(`\n${results.length} match(es)`);
+    })
+    .command("graph")
+    .description("Build a project relationship graph summary")
+    .action(() => {
+      const graph = buildProjectGraph(scanRepository(process.cwd()));
+      const counts = graph.nodes.reduce<Record<string, number>>((result, node) => {
+        result[node.type] = (result[node.type] ?? 0) + 1;
+        return result;
+      }, {});
+      console.log(`Nodes: ${graph.nodes.length}`);
+      console.log(`Edges: ${graph.edges.length}`);
+      console.log("Node types: " + Object.entries(counts).sort(([a], [b]) => a.localeCompare(b))
+        .map(([type, count]) => `${type}=${count}`).join(", "));
     });
 
   return program;

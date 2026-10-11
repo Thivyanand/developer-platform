@@ -342,3 +342,100 @@ export function searchRepository(
     .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path) || a.line - b.line)
     .slice(0, maxResults);
 }
+
+
+export type ProjectGraphNodeType = "project" | "file" | "language" | "framework" | "commit" | "branch";
+export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "has-commit" | "points-to";
+
+export interface ProjectGraphNode {
+  id: string;
+  type: ProjectGraphNodeType;
+  label: string;
+  path?: string;
+}
+
+export interface ProjectGraphEdge {
+  source: string;
+  target: string;
+  type: ProjectGraphEdgeType;
+}
+
+export interface ProjectGraph {
+  nodes: ProjectGraphNode[];
+  edges: ProjectGraphEdge[];
+}
+
+/** Build a deterministic, in-memory relationship graph from an ingested snapshot. */
+export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
+  const nodes: ProjectGraphNode[] = [{
+    id: "project:root",
+    type: "project",
+    label: basename(snapshot.rootPath) || "project"
+  }];
+  const edges: ProjectGraphEdge[] = [];
+  const knownNodeIds = new Set(nodes.map((node) => node.id));
+
+  const addNode = (node: ProjectGraphNode): void => {
+    if (knownNodeIds.has(node.id)) return;
+    knownNodeIds.add(node.id);
+    nodes.push(node);
+  };
+  const addEdge = (source: string, target: string, type: ProjectGraphEdgeType): void => {
+    edges.push({ source, target, type });
+  };
+
+  for (const file of snapshot.files) {
+    const id = "file:" + file.path;
+    addNode({ id, type: "file", label: basename(file.path), path: file.path });
+    addEdge("project:root", id, "contains");
+
+    const language = LANGUAGE_BY_EXTENSION[file.extension ? "." + file.extension : ""];
+    if (language) {
+      const languageId = "language:" + language;
+      addNode({ id: languageId, type: "language", label: language });
+      addEdge(id, languageId, "uses-language");
+    }
+  }
+
+  for (const framework of snapshot.frameworks) {
+    const id = "framework:" + framework;
+    addNode({ id, type: "framework", label: framework });
+    addEdge("project:root", id, "uses-framework");
+  }
+
+  if (snapshot.git) {
+    const commitIds = new Set<string>();
+    for (const commit of snapshot.git.commits) {
+      const id = "commit:" + commit.hash;
+      commitIds.add(commit.hash);
+      addNode({ id, type: "commit", label: commit.subject || commit.hash.slice(0, 7) });
+      addEdge("project:root", id, "has-commit");
+    }
+
+    for (const branch of snapshot.git.branches) {
+      const branchId = "branch:" + branch.name;
+      addNode({
+        id: branchId,
+        type: "branch",
+        label: branch.current ? branch.name + " (current)" : branch.name
+      });
+      addEdge("project:root", branchId, "contains");
+
+      const commitId = "commit:" + branch.commit;
+      if (!commitIds.has(branch.commit)) {
+        addNode({ id: commitId, type: "commit", label: branch.commit.slice(0, 7) });
+        commitIds.add(branch.commit);
+        addEdge("project:root", commitId, "has-commit");
+      }
+      addEdge(branchId, commitId, "points-to");
+    }
+  }
+
+  nodes.sort((a, b) => a.type.localeCompare(b.type) || a.id.localeCompare(b.id));
+  edges.sort((a, b) =>
+    a.source.localeCompare(b.source) ||
+    a.type.localeCompare(b.type) ||
+    a.target.localeCompare(b.target)
+  );
+  return { nodes, edges };
+}

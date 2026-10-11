@@ -38,9 +38,15 @@ The first code-search baseline is implemented. Search tokenizes camelCase identi
 
 Run `project search "git metadata"` from a repository root. Use `--limit 5` to cap results.
 
+## Day 6 — Project graph prototype
+
+The initial project graph connects the repository root to discovered files, detected languages and frameworks, Git commits, and local branches. The graph is deterministic and in-memory, with relationship edges and a CLI summary.
+
+Run `project graph` from a repository root to inspect node and edge counts.
+
 ## Status
 
-🚧 Early development — repository ingestion and initial code search.
+🚧 Early development — repository ingestion, code search, and metadata graph prototype.
 
 See docs/vision.md, docs/architecture.md, docs/roadmap.md, and docs/DECISIONS.md.
 
@@ -62,6 +68,7 @@ Run the CLI after building:
     pnpm --filter @developer-platform/cli exec developer-platform project
     pnpm --filter @developer-platform/cli exec developer-platform project scan
     pnpm --filter @developer-platform/cli exec developer-platform project search "git metadata"
+    pnpm --filter @developer-platform/cli exec developer-platform project graph
 
 The public product name remains intentionally open while development continues.
 

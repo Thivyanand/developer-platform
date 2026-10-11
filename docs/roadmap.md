@@ -52,8 +52,11 @@
 - [x] Search tests and documentation
 
 ### Day 6
-- Project graph prototype
-- Integration tests
+- [x] Deterministic project graph prototype
+- [x] File, language, framework, commit, and branch nodes
+- [x] Containment and metadata relationship edges
+- [x] CLI graph summary
+- [x] Graph integration tests
 
 ### Day 7
 - Week 1 review
