@@ -195,5 +195,5 @@ test("adds edges for resolvable relative source imports", async () => {
     edge.target === "file:src/util.ts" &&
     edge.type === "imports"
   ));
-  assert.equal(graph.edges.some((edge) => edge.target === "file:node_modules/express"), false);
+  assert.equal(graph.edges.some((edge) => edge.source === "file:src/external.ts" && edge.type === "imports"), false);
 });
