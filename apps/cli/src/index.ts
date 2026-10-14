@@ -14,7 +14,7 @@ export function createCli(): Command {
     .description("An intelligence layer for the modern developer workflow.")
     .version("0.1.0");
 
-  program
+  const projectCommand = program
     .command("project")
     .description("Inspect the current project")
     .action(() => {
@@ -23,7 +23,9 @@ export function createCli(): Command {
 
       console.log(`Project: ${project.name}`);
       console.log(`Root: ${project.rootPath}`);
-    })
+    });
+
+  projectCommand
     .command("scan")
     .description("Scan the repository and report its project structure")
     .action(() => {
@@ -32,7 +34,9 @@ export function createCli(): Command {
       console.log(`Files: ${snapshot.files.length}`);
       console.log(`Languages: ${snapshot.languages.join(", ") || "none detected"}`);
       console.log(`Frameworks: ${snapshot.frameworks.join(", ") || "none detected"}`);
-    })
+    });
+
+  projectCommand
     .command("search <query>")
     .description("Search repository source files")
     .option("-n, --limit <count>", "maximum number of results", "20")
@@ -54,11 +58,19 @@ export function createCli(): Command {
         console.log(`${result.path}:${result.line}  ${result.snippet}`);
       }
       console.log(`\n${results.length} match(es)`);
-    })
+    });
+
+  projectCommand
     .command("graph")
     .description("Build a project relationship graph summary")
-    .action(() => {
+    .option("--json", "print the full graph as JSON")
+    .action((options: { json?: boolean }) => {
       const graph = buildProjectGraph(scanRepository(process.cwd()));
+      if (options.json) {
+        console.log(JSON.stringify(graph, null, 2));
+        return;
+      }
+
       const counts = graph.nodes.reduce<Record<string, number>>((result, node) => {
         result[node.type] = (result[node.type] ?? 0) + 1;
         return result;
