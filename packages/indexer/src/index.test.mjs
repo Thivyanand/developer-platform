@@ -179,3 +179,21 @@ test("includes git commits and branch tip relationships in the project graph", a
   assert.ok(graph.nodes.some((node) => node.type === "branch" && node.label === "master (current)"));
   assert.ok(graph.edges.some((edge) => edge.type === "points-to" && edge.source === "branch:feature/graph"));
 });
+
+
+test("adds edges for resolvable relative source imports", async () => {
+  const { buildProjectGraph } = await import("../dist/index.js");
+  const root = mkdtempSync(join(tmpdir(), "developer-platform-import-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "src", "main.ts"), 'import { helper } from "./util";\\nexport const result = helper();');
+  writeFileSync(join(root, "src", "util.ts"), "export function helper() { return 42; }");
+  writeFileSync(join(root, "src", "external.ts"), 'import express from "express";');
+
+  const graph = buildProjectGraph(scanRepository(root));
+  assert.ok(graph.edges.some((edge) =>
+    edge.source === "file:src/main.ts" &&
+    edge.target === "file:src/util.ts" &&
+    edge.type === "imports"
+  ));
+  assert.equal(graph.edges.some((edge) => edge.target === "file:node_modules/express"), false);
+});
