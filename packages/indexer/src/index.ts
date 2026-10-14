@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { basename, extname, join, relative } from "node:path";
+import { basename, extname, join, relative, posix } from "node:path";
 
 export interface RepositoryFile {
   path: string;
@@ -345,7 +345,7 @@ export function searchRepository(
 
 
 export type ProjectGraphNodeType = "project" | "file" | "language" | "framework" | "commit" | "branch";
-export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "has-commit" | "points-to";
+export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "has-commit" | "points-to" | "imports";
 
 export interface ProjectGraphNode {
   id: string;
@@ -397,10 +397,38 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
     }
   }
 
-  for (const framework of snapshot.frameworks) {
-    const id = "framework:" + framework;
-    addNode({ id, type: "framework", label: framework });
-    addEdge("project:root", id, "uses-framework");
+  // Resolve relative source imports against files already discovered by the scanner.
+  // This intentionally avoids guessing at package imports or requiring language-specific parsers.
+  const filePaths = new Set(snapshot.files.map((file) => file.path.replaceAll("\\", "/")));
+  const sourceExtensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts", ".py"];
+
+  const resolveImport = (fromPath: string, specifier: string): string | null => {
+    const basePath = posix.normalize(posix.join(posix.dirname(fromPath), specifier));
+    const candidates = [basePath];
+
+    if (!posix.extname(basePath)) {
+      candidates.push(...sourceExtensions.map((extension) => basePath + extension));
+      candidates.push(...sourceExtensions.map((extension) => posix.join(basePath, "index" + extension)));
+    }
+
+    return candidates.find((candidate) => filePaths.has(candidate)) ?? null;
+  };
+
+  for (const file of snapshot.files) {
+    if (!["ts", "tsx", "js", "jsx", "mjs", "cjs", "mts", "cts", "py"].includes(file.extension)) continue;
+
+    let source: string;
+    try {
+      source = readFileSync(join(snapshot.rootPath, file.path), "utf8");
+    } catch {
+      continue;
+    }
+
+    const importPattern = /\\b(?:from\\s*|import\\s*\\(|require\\s*\\()\\s*["'](\\.{1,2}\\/[^"']+)["']/g;
+    for (const match of source.matchAll(importPattern)) {
+      const targetPath = resolveImport(file.path.replaceAll("\\", "/"), match[1]);
+      if (targetPath) addEdge("file:" + file.path, "file:" + targetPath, "imports");
+    }
   }
 
   if (snapshot.git) {
