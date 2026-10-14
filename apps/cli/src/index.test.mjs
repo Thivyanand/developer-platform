@@ -10,30 +10,19 @@ test("creates the CLI with project command", () => {
   assert.equal(cli.commands.some((command) => command.name() === "project"), true);
 });
 
-test("exposes the project scan command", () => {
+test("exposes scan, search, and graph as sibling project commands", () => {
   const cli = createCli();
   const project = cli.commands.find((command) => command.name() === "project");
+  const childNames = project?.commands.map((command) => command.name());
 
-  assert.equal(
-    project?.commands.some((command) => command.name() === "scan"),
-    true
-  );
+  assert.deepEqual(childNames, ["scan", "search", "graph"]);
+  assert.equal(project?.commands.some((command) => command.commands.length > 0), false);
 });
 
-
-test("exposes the project search command", () => {
+test("graph command supports JSON output", () => {
   const cli = createCli();
   const project = cli.commands.find((command) => command.name() === "project");
+  const graph = project?.commands.find((command) => command.name() === "graph");
 
-  assert.equal(
-    project?.commands.some((command) => command.name() === "search"),
-    true
-  );
-});
-
-
-test("exposes the project graph command", () => {
-  const cli = createCli();
-  const project = cli.commands.find((command) => command.name() === "project");
-  assert.equal(project?.commands.some((command) => command.name() === "graph"), true);
+  assert.equal(graph?.options.some((option) => option.long === "--json"), true);
 });
