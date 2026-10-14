@@ -424,7 +424,7 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
       continue;
     }
 
-    const importPattern = /\\b(?:from\\s*|import\\s*\\(|require\\s*\\()\\s*["'](\\.{1,2}\\/[^"']+)["']/g;
+    const importPattern = /\b(?:from\s*|import\s*\(|require\s*\()\s*["'](\.{1,2}\/[^"']+)["']/g;
     for (const match of source.matchAll(importPattern)) {
       const targetPath = resolveImport(file.path.replaceAll("\\", "/"), match[1]);
       if (targetPath) addEdge("file:" + file.path, "file:" + targetPath, "imports");
