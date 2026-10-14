@@ -96,3 +96,10 @@ Run the graph summary from a repository root:
     developer-platform project graph
 
 The CLI reports total nodes, total edges, and node counts by type. This is a metadata graph prototype; symbol-level imports, function calls, and dependency edges will be added in later intelligence-engine work.
+
+
+## Week 1 review — graph relationships
+
+The graph now includes relative source-import edges for TypeScript, JavaScript, and Python-like source files when a target can be resolved to a discovered repository file. It recognizes common source extensions and directory index files. Package imports and unresolved paths are deliberately ignored rather than guessed.
+
+Use `developer-platform project graph` for a summary or `developer-platform project graph --json` for the complete node/edge payload. The graph remains in-memory and read-only.
