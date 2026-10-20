@@ -401,6 +401,12 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
     }
   }
 
+  for (const framework of snapshot.frameworks) {
+    const id = "framework:" + framework;
+    addNode({ id, type: "framework", label: framework });
+    addEdge("project:root", id, "uses-framework");
+  }
+
   // Capture direct package dependencies from the root Node.js manifest.
   try {
     const manifest = JSON.parse(readFileSync(join(snapshot.rootPath, "package.json"), "utf8")) as {
