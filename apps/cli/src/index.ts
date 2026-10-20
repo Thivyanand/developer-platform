@@ -4,7 +4,7 @@ import { basename } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Command } from "commander";
 import { createProject } from "@developer-platform/core";
-import { buildProjectGraph, scanRepository, searchRepository } from "@developer-platform/indexer";
+import { buildProjectGraph, scanRepository, searchRepository, validateProjectGraph } from "@developer-platform/indexer";
 
 export function createCli(): Command {
   const program = new Command();
@@ -64,7 +64,8 @@ export function createCli(): Command {
     .command("graph")
     .description("Build a project relationship graph summary")
     .option("--json", "print the full graph as JSON")
-    .action((options: { json?: boolean }) => {
+    .option("--check", "validate graph node and edge integrity")
+    .action((options: { json?: boolean; check?: boolean }) => {
       const graph = buildProjectGraph(scanRepository(process.cwd()));
       if (options.json) {
         console.log(JSON.stringify(graph, null, 2));
@@ -79,6 +80,13 @@ export function createCli(): Command {
       console.log(`Edges: ${graph.edges.length}`);
       console.log("Node types: " + Object.entries(counts).sort(([a], [b]) => a.localeCompare(b))
         .map(([type, count]) => `${type}=${count}`).join(", "));
+
+      if (options.check) {
+        const validation = validateProjectGraph(graph);
+        console.log(`Graph validation: ${validation.valid ? "passed" : "failed"}`);
+        for (const error of validation.errors) console.error("- " + error);
+        if (!validation.valid) process.exitCode = 1;
+      }
     });
 
   return program;
