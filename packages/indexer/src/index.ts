@@ -428,7 +428,7 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
   // Resolve relative source imports against files already discovered by the scanner.
   // This intentionally avoids guessing at package imports or requiring language-specific parsers.
   const filePaths = new Set(snapshot.files.map((file) => file.path.replaceAll("\\", "/")));
-  const sourceExtensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts", ".py"];
+  const sourceExtensions = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts"];
 
   const resolveImport = (fromPath: string, specifier: string): string | null => {
     const basePath = posix.normalize(posix.join(posix.dirname(fromPath), specifier));
@@ -443,7 +443,7 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
   };
 
   for (const file of snapshot.files) {
-    if (!["ts", "tsx", "js", "jsx", "mjs", "cjs", "mts", "cts", "py"].includes(file.extension)) continue;
+    if (!["ts", "tsx", "js", "jsx", "mjs", "cjs", "mts", "cts"].includes(file.extension)) continue;
 
     let source: string;
     try {
