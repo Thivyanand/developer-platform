@@ -87,7 +87,7 @@ This is a first retrieval baseline, not yet a persistent index or semantic searc
 
 ## Day 6 — Project graph prototype
 
-The graph prototype transforms a repository snapshot into a deterministic in-memory graph. Nodes represent the project, files, detected languages, frameworks, Git commits, and local branches. Edges represent containment, language usage, framework usage, project commit history, and branch tip references.
+The graph prototype transforms a repository snapshot into a deterministic in-memory graph. Nodes represent the project, files, detected languages, frameworks, root manifest packages, Git commits, and local branches. Edges represent containment, language usage, framework usage, package dependencies, resolvable relative TypeScript/JavaScript imports, project commit history, and branch tip references.
 
 Graph construction is read-only and does not persist source code or mutate the repository. Every edge points to a node included in the graph. Nodes and edges are sorted for stable output and testability.
 
@@ -102,4 +102,4 @@ The CLI reports total nodes, total edges, and node counts by type. This is a met
 
 The graph now includes relative source-import edges for TypeScript, JavaScript, and Python-like source files when a target can be resolved to a discovered repository file. It recognizes common source extensions and directory index files. Package imports and unresolved paths are deliberately ignored rather than guessed.
 
-Use `developer-platform project graph` for a summary or `developer-platform project graph --json` for the complete node/edge payload. The graph remains in-memory and read-only.
+Use `developer-platform project graph` for a summary or `developer-platform project graph --json` for the complete node/edge payload. The graph remains in-memory and read-only. Duplicate relationships are deduplicated, and `validateProjectGraph` checks node uniqueness, edge uniqueness, and edge endpoints. Use `developer-platform project graph --check` to run that integrity check from the CLI.
