@@ -227,3 +227,28 @@ test("adds package dependency nodes and deduplicates graph edges", async () => {
     edge.source === "file:src/main.ts" && edge.target === "file:src/setup.ts" && edge.type === "imports"
   ).length, 1);
 });
+
+
+test("validates graph edges and reports dangling or duplicate relationships", async () => {
+  const { buildProjectGraph, validateProjectGraph } = await import("../dist/index.js");
+  const root = mkdtempSync(join(tmpdir(), "developer-platform-graph-validation-"));
+  writeFileSync(join(root, "index.ts"), "export const value = 1;");
+  const graph = buildProjectGraph(scanRepository(root));
+
+  assert.deepEqual(validateProjectGraph(graph), { valid: true, errors: [] });
+
+  const invalidGraph = {
+    nodes: [...graph.nodes, graph.nodes[0]],
+    edges: [
+      ...graph.edges,
+      { source: "missing:source", target: "missing:target", type: "imports" },
+      ...graph.edges.slice(0, 1)
+    ]
+  };
+  const validation = validateProjectGraph(invalidGraph);
+  assert.equal(validation.valid, false);
+  assert.ok(validation.errors.some((error) => error.startsWith("Duplicate node id:")));
+  assert.ok(validation.errors.some((error) => error.startsWith("Missing edge source:")));
+  assert.ok(validation.errors.some((error) => error.startsWith("Missing edge target:")));
+  assert.ok(validation.errors.some((error) => error.startsWith("Duplicate edge:")));
+});
