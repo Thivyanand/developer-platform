@@ -495,3 +495,25 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
   );
   return { nodes, edges };
 }
+
+/** Validate graph identity and relationship integrity without mutating the graph. */
+export function validateProjectGraph(graph: ProjectGraph): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const nodeIds = new Set<string>();
+
+  for (const node of graph.nodes) {
+    if (nodeIds.has(node.id)) errors.push("Duplicate node id: " + node.id);
+    nodeIds.add(node.id);
+  }
+
+  const edgeIds = new Set<string>();
+  for (const edge of graph.edges) {
+    if (!nodeIds.has(edge.source)) errors.push("Missing edge source: " + edge.source);
+    if (!nodeIds.has(edge.target)) errors.push("Missing edge target: " + edge.target);
+    const key = JSON.stringify([edge.source, edge.target, edge.type]);
+    if (edgeIds.has(key)) errors.push("Duplicate edge: " + key);
+    edgeIds.add(key);
+  }
+
+  return { valid: errors.length === 0, errors };
+}
