@@ -25,4 +25,5 @@ test("graph command supports JSON output", () => {
   const graph = project?.commands.find((command) => command.name() === "graph");
 
   assert.equal(graph?.options.some((option) => option.long === "--json"), true);
+  assert.equal(graph?.options.some((option) => option.long === "--check"), true);
 });
