@@ -42,7 +42,7 @@ Run `project search "git metadata"` from a repository root. Use `--limit 5` to c
 
 The initial project graph connects the repository root to discovered files, detected languages and frameworks, Git commits, and local branches. The graph is deterministic and in-memory, with relationship edges and a CLI summary.
 
-Run `project graph` from a repository root to inspect node and edge counts, or use `project graph --json` to print the full graph. The graph now also links files through resolvable relative imports.
+Run `project graph` from a repository root to inspect node and edge counts. Use `project graph --json` to print the full graph or `project graph --check` to validate node and edge integrity. The graph includes root package dependencies and resolvable relative TypeScript/JavaScript imports.
 
 ## Status
 
