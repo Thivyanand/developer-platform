@@ -59,9 +59,39 @@
 - [x] Graph integration tests
 
 ### Day 7
-- Week 1 review
-- Documentation
-- Release v0.1.0
+- [x] Week 1 review and CLI command hierarchy fix
+- [x] Documentation refresh
+- [ ] Release v0.1.0 (blocked until CI is green)
+
+### Day 8
+- [x] Relative TypeScript/JavaScript import edges
+- [x] Import resolution against discovered files
+- [x] Import relationship tests
+
+### Day 9
+- [x] JSON graph output
+- [x] Graph usage documentation
+
+### Day 10
+- [x] Root package dependency nodes
+- [x] Dependencies from dependencies, devDependencies, peerDependencies, and optionalDependencies
+
+### Day 11
+- [x] Deduplicate graph nodes and relationships
+- [x] Cover repeated static/dynamic import relationships
+
+### Day 12
+- [x] Graph integrity validator
+- [x] Detect duplicate nodes and edges, and dangling edge endpoints
+
+### Day 13
+- [x] Expose graph validation through `project graph --check`
+- [x] CLI option coverage
+
+### Day 14–18
+- [x] Catch-up review and documentation updates
+- [ ] Run/confirm full CI on the latest commit
+- [ ] Complete release readiness review
 
 ## Week 2 — Intelligence Engine
 
