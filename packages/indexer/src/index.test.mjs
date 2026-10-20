@@ -197,3 +197,33 @@ test("adds edges for resolvable relative source imports", async () => {
   ));
   assert.equal(graph.edges.some((edge) => edge.source === "file:src/external.ts" && edge.type === "imports"), false);
 });
+
+
+test("adds package dependency nodes and deduplicates graph edges", async () => {
+  const { buildProjectGraph } = await import("../dist/index.js");
+  const root = mkdtempSync(join(tmpdir(), "developer-platform-dependencies-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "package.json"), JSON.stringify({
+    dependencies: { react: "^19.0.0", zod: "^4.0.0" },
+    devDependencies: { vite: "^7.0.0", react: "^19.0.0" }
+  }));
+  writeFileSync(join(root, "src", "main.ts"), [
+    'import "./setup";',
+    'import("./setup");',
+    'import { setup } from "./setup";',
+    "export { setup };"
+  ].join("\\n"));
+  writeFileSync(join(root, "src", "setup.ts"), "export const setup = true;");
+
+  const graph = buildProjectGraph(scanRepository(root));
+  assert.ok(graph.nodes.some((node) => node.id === "package:react" && node.type === "package"));
+  assert.ok(graph.nodes.some((node) => node.id === "package:zod" && node.type === "package"));
+  assert.ok(graph.nodes.some((node) => node.id === "package:vite" && node.type === "package"));
+  assert.equal(graph.nodes.filter((node) => node.id === "package:react").length, 1);
+  assert.equal(graph.edges.filter((edge) =>
+    edge.source === "project:root" && edge.target === "package:react" && edge.type === "depends-on"
+  ).length, 1);
+  assert.equal(graph.edges.filter((edge) =>
+    edge.source === "file:src/main.ts" && edge.target === "file:src/setup.ts" && edge.type === "imports"
+  ).length, 1);
+});
