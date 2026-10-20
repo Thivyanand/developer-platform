@@ -344,8 +344,8 @@ export function searchRepository(
 }
 
 
-export type ProjectGraphNodeType = "project" | "file" | "language" | "framework" | "commit" | "branch";
-export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "has-commit" | "points-to" | "imports";
+export type ProjectGraphNodeType = "project" | "file" | "language" | "framework" | "package" | "commit" | "branch";
+export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "depends-on" | "has-commit" | "points-to" | "imports";
 
 export interface ProjectGraphNode {
   id: string;
@@ -374,6 +374,7 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
   }];
   const edges: ProjectGraphEdge[] = [];
   const knownNodeIds = new Set(nodes.map((node) => node.id));
+  const knownEdgeIds = new Set<string>();
 
   const addNode = (node: ProjectGraphNode): void => {
     if (knownNodeIds.has(node.id)) return;
@@ -381,6 +382,9 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
     nodes.push(node);
   };
   const addEdge = (source: string, target: string, type: ProjectGraphEdgeType): void => {
+    const key = JSON.stringify([source, target, type]);
+    if (knownEdgeIds.has(key)) return;
+    knownEdgeIds.add(key);
     edges.push({ source, target, type });
   };
 
@@ -395,6 +399,30 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
       addNode({ id: languageId, type: "language", label: language });
       addEdge(id, languageId, "uses-language");
     }
+  }
+
+  // Capture direct package dependencies from the root Node.js manifest.
+  try {
+    const manifest = JSON.parse(readFileSync(join(snapshot.rootPath, "package.json"), "utf8")) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+      peerDependencies?: Record<string, string>;
+      optionalDependencies?: Record<string, string>;
+    };
+    const dependencyNames = new Set([
+      ...Object.keys(manifest.dependencies ?? {}),
+      ...Object.keys(manifest.devDependencies ?? {}),
+      ...Object.keys(manifest.peerDependencies ?? {}),
+      ...Object.keys(manifest.optionalDependencies ?? {})
+    ]);
+
+    for (const name of [...dependencyNames].sort()) {
+      const id = "package:" + name;
+      addNode({ id, type: "package", label: name });
+      addEdge("project:root", id, "depends-on");
+    }
+  } catch {
+    // A package.json is optional; repositories without one still produce a graph.
   }
 
   // Resolve relative source imports against files already discovered by the scanner.
@@ -424,7 +452,7 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
       continue;
     }
 
-    const importPattern = /\b(?:from\s*|import\s*\(|require\s*\()\s*["'](\.{1,2}\/[^"']+)["']/g;
+    const importPattern = /\b(?:from\s*|import\s*(?:\(\s*)?|require\s*\()\s*["'](\.{1,2}\/[^"']+)["']/g;
     for (const match of source.matchAll(importPattern)) {
       const targetPath = resolveImport(file.path.replaceAll("\\", "/"), match[1]);
       if (targetPath) addEdge("file:" + file.path, "file:" + targetPath, "imports");
