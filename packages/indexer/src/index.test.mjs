@@ -252,3 +252,13 @@ test("validates graph edges and reports dangling or duplicate relationships", as
   assert.ok(validation.errors.some((error) => error.startsWith("Missing edge target:")));
   assert.ok(validation.errors.some((error) => error.startsWith("Duplicate edge:")));
 });
+
+test("extracts exported code symbols with source locations", async () => {
+  const { extractCodeSymbols } = await import("../dist/index.js");
+  const symbols = extractCodeSymbols("export function greet() {}\nclass Worker {}\nexport const start = () => {};", "src/app.ts");
+  assert.deepEqual(symbols, [
+    { name: "greet", kind: "function", path: "src/app.ts", line: 1, exported: true },
+    { name: "Worker", kind: "class", path: "src/app.ts", line: 2, exported: false },
+    { name: "start", kind: "variable", path: "src/app.ts", line: 3, exported: true }
+  ]);
+});
