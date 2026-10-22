@@ -100,7 +100,8 @@
 - [ ] Expand coverage for multiline declarations and complex syntax
 - [ ] Build symbol relationship edges and symbol-aware search
 
-\n## Week 2 — Intelligence Engine
+
+## Week 2 — Intelligence Engine
 
 - Code understanding
 - Symbol relationships
