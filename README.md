@@ -48,7 +48,8 @@ Run `project graph` from a repository root to inspect node and edge counts. Use 
 
 The indexer now has an initial, lightweight symbol extractor for JavaScript/TypeScript declarations. It reports each symbol's name, kind, source path, line number, and export status. This is a heuristic first pass, not a full language parser; multiline declarations and complex syntax may require a future parser-backed implementation.
 
-\n## Status
+
+## Status
 
 🚧 Early development — repository ingestion, code search, and metadata graph prototype.
 
