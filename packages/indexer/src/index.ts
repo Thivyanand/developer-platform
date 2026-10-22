@@ -344,6 +344,61 @@ export function searchRepository(
 }
 
 
+export type CodeSymbolKind = "function" | "class" | "interface" | "type" | "enum" | "variable";
+
+export interface CodeSymbol {
+  name: string;
+  kind: CodeSymbolKind;
+  path: string;
+  line: number;
+  exported: boolean;
+}
+
+/**
+ * Extract top-level TypeScript/JavaScript declarations using a lightweight
+ * line-oriented parser. This is intentionally heuristic: it does not claim
+ * to replace a language parser or resolve symbols across files.
+ */
+export function extractCodeSymbols(source: string, path: string): CodeSymbol[] {
+  const symbols: CodeSymbol[] = [];
+  const seen = new Set<string>();
+  const lines = source.split(/\r?\n/);
+  const declaration = /^\s*(export\s+(?:default\s+|declare\s+|abstract\s+|async\s+)*)?(?:declare\s+)?(function\*?|class|interface|type|enum|const|let|var)\s+([A-Za-z_$][\w$]*)\b/;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = lines[index].match(declaration);
+    if (!match) continue;
+
+    const prefix = match[1] ?? "";
+    const keyword = match[2];
+    const name = match[3];
+    const kind: CodeSymbolKind = keyword.startsWith("function")
+      ? "function"
+      : keyword === "class"
+        ? "class"
+        : keyword === "interface"
+          ? "interface"
+          : keyword === "type"
+            ? "type"
+            : keyword === "enum"
+              ? "enum"
+              : "variable";
+    const identity = kind + ":" + name;
+    if (seen.has(identity)) continue;
+    seen.add(identity);
+    symbols.push({
+      name,
+      kind,
+      path,
+      line: index + 1,
+      exported: /\bexport\b/.test(prefix)
+    });
+  }
+
+  return symbols;
+}
+
+
 export type ProjectGraphNodeType = "project" | "file" | "language" | "framework" | "package" | "commit" | "branch";
 export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "depends-on" | "has-commit" | "points-to" | "imports";
 
