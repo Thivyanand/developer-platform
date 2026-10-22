@@ -93,7 +93,14 @@
 - [ ] Run/confirm full CI on the latest commit
 - [ ] Complete release readiness review
 
-## Week 2 — Intelligence Engine
+### Day 19
+- [x] Add a first-pass TypeScript/JavaScript declaration symbol extractor
+- [x] Capture symbol kind, path, line number, and export status
+- [x] Add symbol extraction test coverage
+- [ ] Expand coverage for multiline declarations and complex syntax
+- [ ] Build symbol relationship edges and symbol-aware search
+
+\n## Week 2 — Intelligence Engine
 
 - Code understanding
 - Symbol relationships
