@@ -262,3 +262,17 @@ test("extracts exported code symbols with source locations", async () => {
     { name: "start", kind: "variable", path: "src/app.ts", line: 3, exported: true }
   ]);
 });
+
+test("searches symbol names and kinds across source files", async () => {
+  const { searchCodeSymbols } = await import("../dist/index.js");
+  const root = mkdtempSync(join(tmpdir(), "developer-platform-symbol-search-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "src", "worker.ts"), "export class Worker {}\nexport function startWorker() {}");
+  writeFileSync(join(root, "src", "other.js"), "const unrelated = 1;");
+  const results = searchCodeSymbols(root, "worker");
+  assert.deepEqual(results.map(({ name, path }) => ({ name, path })), [
+    { name: "Worker", path: "src/worker.ts" },
+    { name: "startWorker", path: "src/worker.ts" }
+  ]);
+  assert.throws(() => searchCodeSymbols(root, "worker", { maxResults: 0 }), /maxResults/);
+});
