@@ -399,6 +399,51 @@ export function extractCodeSymbols(source: string, path: string): CodeSymbol[] {
 }
 
 
+export interface SymbolSearchResult extends CodeSymbol {
+  score: number;
+}
+
+/** Search discovered TypeScript/JavaScript declarations by name or kind. */
+export function searchCodeSymbols(
+  rootPath: string,
+  query: string,
+  options: { maxResults?: number } = {}
+): SymbolSearchResult[] {
+  const terms = [...new Set(tokenizeCode(query))];
+  if (terms.length === 0) return [];
+
+  const maxResults = options.maxResults ?? 20;
+  if (!Number.isInteger(maxResults) || maxResults < 1) {
+    throw new Error("maxResults must be a positive integer");
+  }
+
+  const results: SymbolSearchResult[] = [];
+  const sourceExtensions = new Set(["ts", "tsx", "js", "jsx", "mjs", "cjs", "mts", "cts"]);
+  for (const file of discoverFiles(rootPath)) {
+    if (!sourceExtensions.has(file.extension)) continue;
+    let source: string;
+    try {
+      source = readFileSync(join(rootPath, file.path), "utf8");
+    } catch {
+      continue;
+    }
+    for (const symbol of extractCodeSymbols(source, file.path)) {
+      const searchable = tokenizeCode(symbol.name + " " + symbol.kind);
+      let score = 0;
+      for (const term of terms) {
+        if (searchable.includes(term)) score += 3;
+        else if (searchable.some((token) => token.includes(term))) score += 1;
+      }
+      if (score > 0) results.push({ ...symbol, score });
+    }
+  }
+
+  return results
+    .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path) || a.line - b.line)
+    .slice(0, maxResults);
+}
+
+
 export type ProjectGraphNodeType = "project" | "file" | "language" | "framework" | "package" | "commit" | "branch";
 export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "depends-on" | "has-commit" | "points-to" | "imports";
 
