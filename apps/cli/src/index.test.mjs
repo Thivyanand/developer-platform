@@ -15,7 +15,7 @@ test("exposes scan, search, and graph as sibling project commands", () => {
   const project = cli.commands.find((command) => command.name() === "project");
   const childNames = project?.commands.map((command) => command.name());
 
-  assert.deepEqual(childNames, ["scan", "search", "graph"]);
+  assert.deepEqual(childNames, ["scan", "search", "symbols", "graph"]);
   assert.equal(project?.commands.some((command) => command.commands.length > 0), false);
 });
 
@@ -26,4 +26,12 @@ test("graph command supports JSON output", () => {
 
   assert.equal(graph?.options.some((option) => option.long === "--json"), true);
   assert.equal(graph?.options.some((option) => option.long === "--check"), true);
+});
+
+test("symbols command supports a configurable result limit", () => {
+  const cli = createCli();
+  const project = cli.commands.find((command) => command.name() === "project");
+  const symbols = project?.commands.find((command) => command.name() === "symbols");
+  assert.ok(symbols);
+  assert.equal(symbols?.options.some((option) => option.long === "--limit"), true);
 });
