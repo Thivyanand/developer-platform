@@ -98,7 +98,8 @@
 - [x] Capture symbol kind, path, line number, and export status
 - [x] Add symbol extraction test coverage
 - [ ] Expand coverage for multiline declarations and complex syntax
-- [x] Add symbol-aware search and expose it through `project symbols <query>`\n- [ ] Build symbol relationship edges and improve parser coverage
+- [x] Add symbol-aware search and expose it through `project symbols <query>`
+- [ ] Build symbol relationship edges and improve parser coverage
 
 
 ## Week 2 — Intelligence Engine
