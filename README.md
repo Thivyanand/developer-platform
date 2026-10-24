@@ -44,9 +44,9 @@ The initial project graph connects the repository root to discovered files, dete
 
 Run `project graph` from a repository root to inspect node and edge counts. Use `project graph --json` to print the full graph or `project graph --check` to validate node and edge integrity. The graph includes root package dependencies and resolvable relative TypeScript/JavaScript imports.
 
-## Day 19 — Symbol extraction
+## Day 19 — Symbol extraction and search
 
-The indexer now has an initial, lightweight symbol extractor for JavaScript/TypeScript declarations. It reports each symbol's name, kind, source path, line number, and export status. This is a heuristic first pass, not a full language parser; multiline declarations and complex syntax may require a future parser-backed implementation.
+The indexer now has an initial, lightweight symbol extractor for JavaScript/TypeScript declarations. It reports each symbol's name, kind, source path, line number, and export status. This is a heuristic first pass, not a full language parser; multiline declarations and complex syntax may require a future parser-backed implementation. Search declaration names with `project symbols "worker"`; use `--limit 5` to cap results.
 
 
 ## Status
@@ -72,7 +72,7 @@ Run the CLI after building:
     pnpm --filter @developer-platform/cli exec developer-platform --help
     pnpm --filter @developer-platform/cli exec developer-platform project
     pnpm --filter @developer-platform/cli exec developer-platform project scan
-    pnpm --filter @developer-platform/cli exec developer-platform project search "git metadata"
+    pnpm --filter @developer-platform/cli exec developer-platform project search "git metadata"\n    pnpm --filter @developer-platform/cli exec developer-platform project symbols "worker"
     pnpm --filter @developer-platform/cli exec developer-platform project graph
 
 The public product name remains intentionally open while development continues.
