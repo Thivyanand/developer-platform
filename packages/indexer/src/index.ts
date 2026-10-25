@@ -444,8 +444,8 @@ export function searchCodeSymbols(
 }
 
 
-export type ProjectGraphNodeType = "project" | "file" | "language" | "framework" | "package" | "commit" | "branch";
-export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "depends-on" | "has-commit" | "points-to" | "imports";
+export type ProjectGraphNodeType = "project" | "file" | "symbol" | "language" | "framework" | "package" | "commit" | "branch";
+export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "depends-on" | "has-commit" | "points-to" | "imports" | "defines-symbol";
 
 export interface ProjectGraphNode {
   id: string;
@@ -505,6 +505,28 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
     const id = "framework:" + framework;
     addNode({ id, type: "framework", label: framework });
     addEdge("project:root", id, "uses-framework");
+  }
+
+  // Add declaration-level symbols to the graph for supported source files.
+  const supportedSourceExtensions = new Set(["ts", "tsx", "js", "jsx", "mjs", "cjs", "mts", "cts"]);
+  for (const file of snapshot.files) {
+    if (!supportedSourceExtensions.has(file.extension)) continue;
+    let source: string;
+    try {
+      source = readFileSync(join(snapshot.rootPath, file.path), "utf8");
+    } catch {
+      continue;
+    }
+    for (const symbol of extractCodeSymbols(source, file.path)) {
+      const id = "symbol:" + file.path + ":" + symbol.kind + ":" + symbol.name;
+      addNode({
+        id,
+        type: "symbol",
+        label: symbol.name,
+        path: file.path + ":" + symbol.line
+      });
+      addEdge("file:" + file.path, id, "defines-symbol");
+    }
   }
 
   // Capture direct package dependencies from the root Node.js manifest.
