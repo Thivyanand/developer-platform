@@ -276,3 +276,16 @@ test("searches symbol names and kinds across source files", async () => {
   ]);
   assert.throws(() => searchCodeSymbols(root, "worker", { maxResults: 0 }), /maxResults/);
 });
+
+test("connects discovered code symbols to their source files in the project graph", async () => {
+  const { buildProjectGraph, validateProjectGraph } = await import("../dist/index.js");
+  const root = mkdtempSync(join(tmpdir(), "developer-platform-symbol-graph-"));
+  mkdirSync(join(root, "src"));
+  writeFileSync(join(root, "src", "worker.ts"), "export class Worker {}\nexport function startWorker() {}");
+  const graph = buildProjectGraph(scanRepository(root));
+
+  assert.ok(graph.nodes.some((node) => node.id === "symbol:src/worker.ts:class:Worker" && node.type === "symbol"));
+  assert.ok(graph.nodes.some((node) => node.id === "symbol:src/worker.ts:function:startWorker" && node.type === "symbol"));
+  assert.ok(graph.edges.some((edge) => edge.source === "file:src/worker.ts" && edge.target === "symbol:src/worker.ts:class:Worker" && edge.type === "defines-symbol"));
+  assert.deepEqual(validateProjectGraph(graph), { valid: true, errors: [] });
+});
