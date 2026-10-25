@@ -46,7 +46,7 @@ Run `project graph` from a repository root to inspect node and edge counts. Use 
 
 ## Day 19 — Symbol extraction and search
 
-The indexer now has an initial, lightweight symbol extractor for JavaScript/TypeScript declarations. It reports each symbol's name, kind, source path, line number, and export status. This is a heuristic first pass, not a full language parser; multiline declarations and complex syntax may require a future parser-backed implementation. Search declaration names with `project symbols "worker"`; use `--limit 5` to cap results.
+The indexer now has an initial, lightweight symbol extractor for JavaScript/TypeScript declarations. It reports each symbol's name, kind, source path, line number, and export status. This is a heuristic first pass, not a full language parser; multiline declarations and complex syntax may require a future parser-backed implementation. Search declaration names with `project symbols "worker"`; use `--limit 5` to cap results. The project graph also adds symbol nodes and `defines-symbol` edges from files to their declarations.
 
 
 ## Status
