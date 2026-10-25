@@ -99,7 +99,8 @@
 - [x] Add symbol extraction test coverage
 - [ ] Expand coverage for multiline declarations and complex syntax
 - [x] Add symbol-aware search and expose it through `project symbols <query>`
-- [ ] Build symbol relationship edges and improve parser coverage
+- [x] Add symbol nodes and file-to-symbol relationship edges to the project graph
+- [ ] Expand parser coverage for multiline declarations and complex syntax
 
 
 ## Week 2 — Intelligence Engine
