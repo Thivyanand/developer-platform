@@ -95,7 +95,7 @@ Run the graph summary from a repository root:
 
     developer-platform project graph
 
-The CLI reports total nodes, total edges, and node counts by type. This is a metadata graph prototype; symbol-level imports, function calls, and dependency edges will be added in later intelligence-engine work.
+The CLI reports total nodes, total edges, and node counts by type. The graph now includes first-pass symbol nodes for supported TypeScript/JavaScript declarations and `defines-symbol` edges from source files. Symbol extraction is heuristic and does not yet resolve function calls or cross-file references.
 
 
 ## Week 1 review — graph relationships
