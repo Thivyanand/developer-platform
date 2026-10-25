@@ -81,7 +81,7 @@ export function createCli(): Command {
       for (const result of results) {
         console.log(`${result.path}:${result.line}  ${result.kind} ${result.name}${result.exported ? " (exported)" : ""}`);
       }
-      console.log(`\\n${results.length} symbol(s)`);
+      console.log(`\n${results.length} symbol(s)`);
     });
 
   projectCommand
