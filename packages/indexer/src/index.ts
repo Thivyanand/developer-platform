@@ -445,7 +445,7 @@ export function searchCodeSymbols(
 
 
 export type ProjectGraphNodeType = "project" | "file" | "symbol" | "language" | "framework" | "package" | "commit" | "branch";
-export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "depends-on" | "has-commit" | "points-to" | "imports" | "defines-symbol";
+export type ProjectGraphEdgeType = "contains" | "uses-language" | "uses-framework" | "depends-on" | "has-commit" | "points-to" | "imports" | "defines-symbol" | "calls";
 
 export interface ProjectGraphNode {
   id: string;
@@ -526,6 +526,36 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
         path: file.path + ":" + symbol.line
       });
       addEdge("file:" + file.path, id, "defines-symbol");
+    }
+  }
+
+  // Infer same-file calls to named function declarations. This intentionally
+  // avoids guessing cross-file targets until import bindings are resolved.
+  for (const file of snapshot.files) {
+    if (!supportedSourceExtensions.has(file.extension)) continue;
+    let source: string;
+    try {
+      source = readFileSync(join(snapshot.rootPath, file.path), "utf8");
+    } catch {
+      continue;
+    }
+    const symbols = extractCodeSymbols(source, file.path);
+    const functions = symbols.filter((symbol) => symbol.kind === "function");
+    if (functions.length === 0) continue;
+    const lines = source.split(/\r?\n/);
+    for (const caller of functions) {
+      const callerId = "symbol:" + caller.path + ":" + caller.kind + ":" + caller.name;
+      for (let index = 0; index < lines.length; index += 1) {
+        if (index + 1 === caller.line) continue;
+        const line = lines[index];
+        for (const target of functions) {
+          if (target.name === caller.name) continue;
+          const callPattern = new RegExp("\\b" + target.name.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\  // Capture direct package dependencies from the root Node.js manifest.") + "\\s*\\(");
+          if (!callPattern.test(line)) continue;
+          const targetId = "symbol:" + target.path + ":" + target.kind + ":" + target.name;
+          addEdge(callerId, targetId, "calls");
+        }
+      }
     }
   }
 
