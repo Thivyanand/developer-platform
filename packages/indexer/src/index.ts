@@ -363,7 +363,7 @@ export function extractCodeSymbols(source: string, path: string): CodeSymbol[] {
   const symbols: CodeSymbol[] = [];
   const seen = new Set<string>();
   const lines = source.split(/\r?\n/);
-  const declaration = /^\s*(export\s+(?:default\s+|declare\s+|abstract\s+|async\s+)*)?(?:declare\s+)?(function\*?|class|interface|type|enum|const|let|var)\s+([A-Za-z_$][\w$]*)\b/;
+  const declaration = /^\s*(export\s+(?:default\s+|declare\s+|abstract\s+|async\s+)*)?(?:declare\s+)?(?:async\s+)?(function\*?|class|interface|type|enum|const|let|var)\s+([A-Za-z_$][\w$]*)\b/;
 
   for (let index = 0; index < lines.length; index += 1) {
     const match = lines[index].match(declaration);
