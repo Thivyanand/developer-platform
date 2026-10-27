@@ -289,3 +289,11 @@ test("connects discovered code symbols to their source files in the project grap
   assert.ok(graph.edges.some((edge) => edge.source === "file:src/worker.ts" && edge.target === "symbol:src/worker.ts:class:Worker" && edge.type === "defines-symbol"));
   assert.deepEqual(validateProjectGraph(graph), { valid: true, errors: [] });
 });
+
+test("extracts non-exported async function declarations", async () => {
+  const { extractCodeSymbols } = await import("../dist/index.js");
+  assert.deepEqual(extractCodeSymbols("async function refreshCache() {}\nexport async function loadData() {}", "src/cache.ts"), [
+    { name: "refreshCache", kind: "function", path: "src/cache.ts", line: 1, exported: false },
+    { name: "loadData", kind: "function", path: "src/cache.ts", line: 2, exported: true }
+  ]);
+});
