@@ -550,7 +550,7 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
         const line = lines[index];
         for (const target of functions) {
           if (target.name === caller.name) continue;
-          const callPattern = new RegExp("\\b" + target.name.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\  // Capture direct package dependencies from the root Node.js manifest.") + "\\s*\\(");
+          const callPattern = new RegExp("\\b" + target.name + "\\s*\\(");
           if (!callPattern.test(line)) continue;
           const targetId = "symbol:" + target.path + ":" + target.kind + ":" + target.name;
           addEdge(callerId, targetId, "calls");
