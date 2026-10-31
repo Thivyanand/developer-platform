@@ -97,6 +97,7 @@
 - [x] Add a first-pass TypeScript/JavaScript declaration symbol extractor
 - [x] Capture symbol kind, path, line number, and export status
 - [x] Add symbol extraction test coverage
+- [x] Support exported declarations whose modifiers span multiple lines
 - [ ] Expand coverage for multiline declarations and complex syntax
 - [x] Add symbol-aware search and expose it through `project symbols <query>`
 - [x] Add symbol nodes and file-to-symbol relationship edges to the project graph
