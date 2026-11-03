@@ -367,7 +367,7 @@ export function extractCodeSymbols(source: string, path: string): CodeSymbol[] {
 
   for (let index = 0; index < lines.length; index += 1) {
     const currentLine = lines[index];
-    const isModifierOnlyLine = /^\\s*export(?:\\s+(?:default|declare|abstract|async))*\\s*$/.test(currentLine);
+    const isModifierOnlyLine = /^\s*export(?:\s+(?:default|declare|abstract|async))*\s*$/.test(currentLine);
     const candidate = isModifierOnlyLine && index + 1 < lines.length
       ? currentLine + " " + lines[index + 1].trim()
       : currentLine;
