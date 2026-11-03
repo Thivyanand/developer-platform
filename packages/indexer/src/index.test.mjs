@@ -305,7 +305,7 @@ test("extracts declarations whose export modifiers span multiple lines", async (
     "async function refreshData() {}",
     "export default",
     "class DataStore {}"
-  ].join("\\n");
+  ].join("\n");
   assert.deepEqual(extractCodeSymbols(source, "src/data.ts"), [
     { name: "refreshData", kind: "function", path: "src/data.ts", line: 1, exported: true },
     { name: "DataStore", kind: "class", path: "src/data.ts", line: 3, exported: true }
