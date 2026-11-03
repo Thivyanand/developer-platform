@@ -306,11 +306,16 @@ test("extracts declarations whose export modifiers span multiple lines", async (
     "export default",
     "class DataStore {}",
     "export",
-    "const loadData = async () => {};"
+    "const loadData = async () => {};",
+    "export",
+    "declare",
+    "async",
+    "function refreshRemote() {}"
   ].join("\n");
   assert.deepEqual(extractCodeSymbols(source, "src/data.ts"), [
     { name: "refreshData", kind: "function", path: "src/data.ts", line: 1, exported: true },
     { name: "DataStore", kind: "class", path: "src/data.ts", line: 3, exported: true },
-    { name: "loadData", kind: "variable", path: "src/data.ts", line: 5, exported: true }
+    { name: "loadData", kind: "variable", path: "src/data.ts", line: 5, exported: true },
+    { name: "refreshRemote", kind: "function", path: "src/data.ts", line: 7, exported: true }
   ]);
 });
