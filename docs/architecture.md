@@ -126,3 +126,8 @@ Node.js 22 LTS is the baseline runtime.
 4. Local operation should not require cloud infrastructure.
 5. Interfaces should allow future IDE, CI/CD, cloud, and Git provider integrations.
 6. Technology choices should be revisited when real implementation evidence contradicts them.
+
+
+## Symbol extraction boundary
+
+The indexer currently extracts a first-pass set of top-level JavaScript/TypeScript declaration shapes with a lightweight line-oriented matcher. Export modifiers may appear on the same line or as consecutive modifier-only lines before a declaration. When modifiers span multiple lines, the symbol location is anchored to the first modifier line. This is deliberately not a substitute for a TypeScript/JavaScript AST: nested declarations, decorators, comments between modifiers, overload semantics, and complex syntax are not fully modeled. Cross-file symbol resolution is a separate future capability.
