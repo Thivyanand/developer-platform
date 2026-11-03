@@ -110,6 +110,21 @@
 - [x] Ensure regression fixtures contain actual newline characters
 - [x] Cover multiline exported functions, classes, and arrow-function variables
 
+### Day 21 — Modifier continuation
+
+- [x] Consume consecutive modifier-only lines before declarations
+- [x] Preserve export status across stacked modifiers
+
+### Day 22 — Regression coverage
+
+- [x] Cover stacked `export`, `declare`, and `async` modifiers
+- [x] Verify source locations remain anchored to the first modifier line
+
+### Day 23 — Parser documentation
+
+- [x] Document supported multiline modifier patterns
+- [x] Keep the lightweight parser's limitations explicit
+
 ## Week 2 — Intelligence Engine
 
 - Code understanding
