@@ -104,6 +104,12 @@
 - [ ] Expand parser coverage for multiline declarations and complex syntax
 
 
+### Day 20 — Parser correctness
+
+- [x] Fix multiline export modifier recognition
+- [x] Ensure regression fixtures contain actual newline characters
+- [x] Cover multiline exported functions, classes, and arrow-function variables
+
 ## Week 2 — Intelligence Engine
 
 - Code understanding
