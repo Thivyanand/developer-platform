@@ -185,7 +185,7 @@ test("adds edges for resolvable relative source imports", async () => {
   const { buildProjectGraph } = await import("../dist/index.js");
   const root = mkdtempSync(join(tmpdir(), "developer-platform-import-"));
   mkdirSync(join(root, "src"));
-  writeFileSync(join(root, "src", "main.ts"), 'import { helper } from "./util";\\nexport const result = helper();');
+  writeFileSync(join(root, "src", "main.ts"), 'import { helper } from "./util";\nexport const result = helper();');
   writeFileSync(join(root, "src", "util.ts"), "export function helper() { return 42; }");
   writeFileSync(join(root, "src", "external.ts"), 'import express from "express";');
 
@@ -212,7 +212,7 @@ test("adds package dependency nodes and deduplicates graph edges", async () => {
     'import("./setup");',
     'import { setup } from "./setup";',
     "export { setup };"
-  ].join("\\n"));
+  ].join("\n"));
   writeFileSync(join(root, "src", "setup.ts"), "export const setup = true;");
 
   const graph = buildProjectGraph(scanRepository(root));
