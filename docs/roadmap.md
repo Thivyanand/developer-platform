@@ -125,6 +125,13 @@
 - [x] Document supported multiline modifier patterns
 - [x] Keep the lightweight parser's limitations explicit
 
+
+### Day 24 — Import graph regression hardening
+
+- [x] Correct import graph fixtures to use actual newline characters
+- [x] Cover re-export edges that resolve to directory index modules
+- [ ] Run the full build, typecheck, and test suite in a local Node.js environment
+
 ## Week 2 — Intelligence Engine
 
 - Code understanding
