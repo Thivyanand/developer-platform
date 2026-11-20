@@ -574,8 +574,19 @@ export function buildProjectGraph(snapshot: RepositorySnapshot): ProjectGraph {
   const resolveImport = (fromPath: string, specifier: string): string | null => {
     const basePath = posix.normalize(posix.join(posix.dirname(fromPath), specifier));
     const candidates = [basePath];
+    const extensionSubstitutions: Record<string, string[]> = {
+      ".js": [".ts", ".tsx"],
+      ".jsx": [".tsx"],
+      ".mjs": [".mts"],
+      ".cjs": [".cts"]
+    };
+    const explicitExtension = posix.extname(basePath);
 
-    if (!posix.extname(basePath)) {
+    if (explicitExtension) {
+      const sourceSubstitutions = extensionSubstitutions[explicitExtension] ?? [];
+      const stem = basePath.slice(0, -explicitExtension.length);
+      candidates.push(...sourceSubstitutions.map((extension) => stem + extension));
+    } else {
       candidates.push(...sourceExtensions.map((extension) => basePath + extension));
       candidates.push(...sourceExtensions.map((extension) => posix.join(basePath, "index" + extension)));
     }
