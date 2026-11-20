@@ -187,6 +187,8 @@ test("adds edges for resolvable relative source imports", async () => {
   mkdirSync(join(root, "src"));
   mkdirSync(join(root, "src", "nested"));
   writeFileSync(join(root, "src", "main.ts"), 'import { helper } from "./util";\nexport const result = helper();');
+  writeFileSync(join(root, "src", "typed-import.ts"), 'import { typed } from "./typed.js"; export { typed };');
+  writeFileSync(join(root, "src", "typed.ts"), "export const typed = true;");
   writeFileSync(join(root, "src", "util.ts"), "export function helper() { return 42; }");
   writeFileSync(join(root, "src", "barrel.ts"), 'export { helper } from "./nested";');
   writeFileSync(join(root, "src", "nested", "index.ts"), "export const nested = true;");
@@ -199,6 +201,7 @@ test("adds edges for resolvable relative source imports", async () => {
     edge.type === "imports"
   ));
   assert.ok(graph.edges.some((edge) => edge.source === "file:src/barrel.ts" && edge.target === "file:src/nested/index.ts" && edge.type === "imports"));
+  assert.ok(graph.edges.some((edge) => edge.source === "file:src/typed-import.ts" && edge.target === "file:src/typed.ts" && edge.type === "imports"));
   assert.equal(graph.edges.some((edge) => edge.source === "file:src/external.ts" && edge.type === "imports"), false);
 });
 
