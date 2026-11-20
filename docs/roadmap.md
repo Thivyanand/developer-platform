@@ -132,6 +132,15 @@
 - [x] Cover re-export edges that resolve to directory index modules
 - [ ] Run the full build, typecheck, and test suite in a local Node.js environment
 
+
+### Day 25 — TypeScript import extension resolution
+
+- [x] Resolve JavaScript-style `.js` imports to TypeScript `.ts`/`.tsx` source when present
+- [x] Resolve `.jsx` imports to `.tsx` source
+- [x] Resolve `.mjs` imports to `.mts` and `.cjs` imports to `.cts`
+- [x] Add regression coverage for explicit extension substitution
+- [ ] Run full local validation (build, typecheck, tests)
+
 ## Week 2 — Intelligence Engine
 
 - Code understanding
